@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "3ZJ72J832T.com.alibarkinbinay.cooker",
+        "appIDs": ["3ZJ72J832T.com.alibarkinbinay.cooker"],
+        "paths": ["/ekle", "/ekle/", "/ekle/*"],
+        "components": [
+          { "/": "/ekle", "comment": "Arkadaş daveti" },
+          { "/": "/ekle/*", "comment": "Arkadaş daveti" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Cooker — Arkadaş daveti</title>
+<!-- WhatsApp önizlemesi (JS çalıştırmıyor: sabit) -->
+<meta property="og:title" content="Cooker'da arkadaş daveti">
+<meta property="og:description" content="Birlikte yemek pişirelim! Dokun, Cooker'da beni arkadaş olarak ekle.">
+<meta property="og:image" content="https://cookerapptr.github.io/ekle/onizleme.png">
+<meta property="og:type" content="website">
+<meta name="apple-itunes-app" content="app-id=6811686186">
+<style>
+  /* Birincil düğme: açıkta beyaz yazı #c2410c üstünde (5.2:1), koyuda koyu yazı #fb923c üstünde (8.4:1) */
+  :root { --zemin: #fff7f2; --kart: #ffffff; --yazi: #1f2328; --soluk: #5d6470; --marka: #c2410c; --markaYazi: #ffffff; --cizgi: #e7d3c5; }
+  @media (prefers-color-scheme: dark) {
+    :root { --zemin: #17130f; --kart: #221c17; --yazi: #f4efe9; --soluk: #b9b0a6; --marka: #fb923c; --markaYazi: #1a120c; --cizgi: #4a3d33; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--zemin); color: var(--yazi);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  main { width: 100%; max-width: 420px; background: var(--kart); border: 1px solid var(--cizgi);
+    border-radius: 24px; padding: 28px 22px; text-align: center; }
+  img { width: 88px; height: 88px; border-radius: 22px; }
+  h1 { font-size: 22px; margin: 16px 0 6px; }
+  p { margin: 0 0 8px; color: var(--soluk); }
+  .kod { display: inline-block; margin: 12px 0 18px; padding: 8px 16px; border-radius: 12px;
+    border: 1px dashed var(--cizgi); font-weight: 800; letter-spacing: 2px; font-size: 20px; color: var(--yazi); }
+  a.dugme, button { display: block; width: 100%; margin-top: 10px; padding: 14px 16px; border-radius: 14px;
+    font-size: 16px; font-weight: 800; text-decoration: none; border: 0; cursor: pointer; font-family: inherit; }
+  a.dugme.birincil { background: var(--marka); color: var(--markaYazi); }
+  a.dugme.ikincil, button.ikincil { background: transparent; color: var(--yazi); border: 1.5px solid var(--cizgi); }
+  .not { font-size: 13px; margin-top: 16px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <img src="onizleme.png" alt="Cooker">
+  <h1 id="baslik">Cooker'da arkadaş daveti</h1>
+  <p id="aciklama"></p>
+  <div id="kodKutu" class="kod" hidden></div>
+  <a id="ac" class="dugme birincil" href="#" hidden></a>
+  <a id="indir" class="dugme ikincil" href="https://apps.apple.com/app/id6811686186"></a>
+  <button id="kopyala" class="ikincil" type="button" hidden></button>
+  <p id="not" class="not"></p>
+</main>
+<script>
+  // Arkadaş daveti (Cooker uygulaması utils/davetBaglantisi ile aynı biçim):
+  //   https://cookerapptr.github.io/ekle/?kod=CK-ABC234
+  // Uygulama yüklü ve evrensel bağlantı kuruluysa iOS bu sayfayı hiç açmaz,
+  // adresi doğrudan uygulamaya verir. Açılırsa: "Uygulamada aç" (cooker://),
+  // "App Store'dan indir", kodu kopyala. Sayfa kendiliğinden yönlendirmez
+  // (uygulama yüklü değilse tarayıcı "adres geçersiz" derdi).
+  // Kod yalnızca biçimi doğrulanınca ve textContent ile gösterilir.
+  (function () {
+    var tr = (navigator.language || '').toLowerCase().indexOf('tr') === 0;
+    var M = tr ? {
+      baslik: "Cooker'da arkadaş daveti",
+      aciklama: 'Arkadaşın seni Cooker\'a çağırıyor: birlikte yemek pişirin, iki telefon aynı tarifi canlı paylaşsın.',
+      gecersiz: 'Bu davet bağlantısı geçersiz. Arkadaşından bağlantıyı yeniden göndermesini iste.',
+      ac: 'Uygulamada aç ve arkadaş ekle',
+      indir: "App Store'dan indir",
+      kopyala: 'Kodu kopyala',
+      kopyalandi: 'Kopyalandı ✓',
+      not: 'Uygulama açılmazsa: Cooker → Keşfet → Arkadaşlar → kodu gir.'
+    } : {
+      baslik: 'Friend invite on Cooker',
+      aciklama: 'Your friend is inviting you to Cooker: cook together, two phones sharing the same recipe live.',
+      gecersiz: 'This invite link isn\'t valid. Ask your friend to send it again.',
+      ac: 'Open in the app and add friend',
+      indir: 'Download on the App Store',
+      kopyala: 'Copy code',
+      kopyalandi: 'Copied ✓',
+      not: "If the app doesn't open: Cooker → Discover → Friends → enter the code."
+    };
+    if (!tr) document.documentElement.lang = 'en';
+    var $ = function (id) { return document.getElementById(id); };
+    var kod = '';
+    try { kod = (new URLSearchParams(location.search).get('kod') || '').trim().toUpperCase(); } catch (e) { kod = ''; }
+    if (!/^CK-[A-HJ-NP-Z2-9]{6}$/.test(kod)) kod = '';
+    $('baslik').textContent = M.baslik;
+    document.title = 'Cooker — ' + M.baslik;
+    $('indir').textContent = M.indir;
+    if (!kod) {
+      $('aciklama').textContent = M.gecersiz;
+      return;
+    }
+    $('aciklama').textContent = M.aciklama;
+    $('kodKutu').textContent = kod;
+    $('kodKutu').hidden = false;
+    $('ac').textContent = M.ac;
+    $('ac').href = 'cooker://ekle/' + encodeURIComponent(kod);
+    $('ac').hidden = false;
+    $('kopyala').textContent = M.kopyala;
+    $('kopyala').hidden = false;
+    $('kopyala').addEventListener('click', function () {
+      var bitti = function () { $('kopyala').textContent = M.kopyalandi; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(kod).then(bitti, function () {});
+      }
+    });
+    $('not').textContent = M.not;
+  })();
+</script>
+</body>
+</html>
